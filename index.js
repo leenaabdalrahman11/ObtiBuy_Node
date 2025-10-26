@@ -1,6 +1,8 @@
 const express = require('express');//ec5
 const app = express();
 app.use(express.json());
+const cors = require('cors');
+app.use(cors());
 
 const users =[
     {
@@ -77,6 +79,10 @@ app.patch('/users',(req,res)=>{
     checkUser.name = name;
     return res.json({message:"success"},data.users);
 })
+app.get('/ping', (req, res) => {
+  res.json({ message: 'Pong from Node server!' });
+});
+
 app.listen(3000, () => {
   console.log("Server is running on port 3000");
 });
