@@ -18,7 +18,7 @@ const userSchema = new Schema({
         min: 4
     },
     image: {
-        type: Object, // أو Mixed حسب حاجتك
+        type: Object, 
     },
     phone: {
         type: String,

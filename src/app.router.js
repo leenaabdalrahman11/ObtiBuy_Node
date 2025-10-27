@@ -1,6 +1,7 @@
 import cors from 'cors';
 import connectDb from '../DB/connection.js';
 import authRouter from './modules/auth/auth.router.js';
+import categoryRouter from './modules/category/category.router.js';
 
 const initApp = async (app, express) => {
   app.use(express.json());
@@ -8,15 +9,12 @@ const initApp = async (app, express) => {
 
   await connectDb();
 
-  app.get('/', (req, res) => {
-    res.status(200).json({ message: "welcome..." });
-  });
+  app.get('/', (req, res) => res.status(200).json({ message: "welcome..." }));
 
   app.use('/auth', authRouter);
+  app.use('/categories', categoryRouter);
 
-  app.use((req, res) => {
-    res.status(404).json({ message: 'Route not found' });
-  });
+  app.use((req, res) => res.status(404).json({ message: 'Route not found' }));
 };
 
 export default initApp;
