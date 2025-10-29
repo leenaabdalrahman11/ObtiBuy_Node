@@ -1,39 +1,40 @@
+import { required, types } from "joi";
 import mongoose, { model, Schema, Types } from "mongoose";
 
-const categorySchema = new Schema({
-  name: {
-    type: String,
-    required: true,
-    minlength: 3,
-    maxlength: 50
-  },
-  image: {
-    type: Object,
-  },
+const userSchema = new Schema({
+    name: {
+        type: String,
+        required: true,
+        min: 3,
+        max: 50
+    },
+    image: {
+        type: Object,
+    },
 
-  status: {
-    type: String,
-    enum: ['active', 'not_active'],
-    default: 'active'
-  },
+    status: {
+        type: String,
+        enum: ['active', 'not_active']
+    },
+    createdAt:{
 
-  createdBy: {
-    type: Types.ObjectId,
-    ref: 'User'
-  },
+    },
+    createdBy:{
+        type:Types.ObjectId,
+        ref:'User',
+    },
+    updatesBy:{
+        type:Types.ObjectId,
+        ref:'User'
+    },
+    slug:{
+        type:String,
+        required:true
+    }
+}, {
+    timestamps: true,
+});
 
-  updatesBy: {
-    type: Types.ObjectId,
-    ref: 'User'
-  },
+const userModel = mongoose.models.User || model('User', userSchema);
 
-  slug: {
-    type: String,
-    required: true,
-    trim: true
-  }
-
-}, { timestamps: true });
-
-const CategoryModel = mongoose.models.Category || model("Category", categorySchema);
-export default CategoryModel;
+export default userModel;
