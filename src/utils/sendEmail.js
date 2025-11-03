@@ -6,7 +6,6 @@ export async function sendEmail(to,subject,html){
             user:process.env.SENDER_EMAIL,
             pass:process.env.SENDER_PASS,
         },
-    
     });
     const info = await transporter.sendMail({
         from:`"OptiBuy" <${process.env.SENDER_EMAIL}>`,
@@ -15,3 +14,7 @@ export async function sendEmail(to,subject,html){
         html,
     });
 }
+
+
+
+
