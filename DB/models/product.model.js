@@ -11,6 +11,10 @@ const productSchema = new Schema({
   },
   description:{
     type:String,
+<<<<<<< HEAD
+=======
+    required:true,
+>>>>>>> f1563fe69b6220a48d807b503e989679b9dc9772
 
   },
   stock:{
@@ -19,6 +23,10 @@ const productSchema = new Schema({
   },
   price:{
     type:Number,
+<<<<<<< HEAD
+=======
+    required:true
+>>>>>>> f1563fe69b6220a48d807b503e989679b9dc9772
   },
   discount:{
     type:Number,
