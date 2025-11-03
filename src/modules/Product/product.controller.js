@@ -11,5 +11,4 @@ export const create=async (req,res)=>{
     req.body.slug=slugify(name);
     const {secure_url} = await cloudinary.uploader.upload(req.files.mainImage[0].path);
     return res.json(secure_url);
-    return res.status(200).json("create");
 }
