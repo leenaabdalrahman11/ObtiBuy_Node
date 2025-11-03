@@ -6,6 +6,6 @@ const router = Router();
 
 router.post('/',auth(['admin']),fileUpload(fileValidation.image).fields([
     {name:'mainImage',maxCount:1},
-    {name:'subImage',maxCount:4}
+    {name:'subImages',maxCount:4}
 ]),controller.create);
 export default router;
