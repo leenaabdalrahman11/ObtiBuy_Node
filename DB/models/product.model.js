@@ -11,8 +11,6 @@ const productSchema = new Schema({
   },
   description:{
     type:String,
-    required:true,
-
   },
   stock:{
     type:Number,
@@ -20,19 +18,18 @@ const productSchema = new Schema({
   },
   price:{
     type:Number,
-    required:true
+
   },
   discount:{
     type:Number,
     default:0
   },
-  mainimage: {
+  mainImage: {
     type: Object,
   },
-  subimages:[
+  subImages:[
     {
         type:Object,
-        required:true
     },
 ],
   status: {
