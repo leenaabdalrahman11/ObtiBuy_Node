@@ -8,14 +8,14 @@ export const fileValidation ={
 
 function fileUpload(customValidation = []){
     const storage = multer.diskStorage({});
-    function fileFilter(req,file,cd){
+    function fileFilter(req,file,cb){
         if(customValidation.includes(file.mimetype)){
            cb(null,true); 
         }else{
             cb("invalid format",false);
         }
     }
-    const upload = multer({storage});
+    const upload = multer({fileFilter,storage});
     return upload;
 }
 

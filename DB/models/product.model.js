@@ -24,10 +24,10 @@ const productSchema = new Schema({
     type:Number,
     default:0
   },
-  mainimage: {
+  mainImage: {
     type: Object,
   },
-  subimages:[
+  subImages:[
     {
         type:Object,
     },
