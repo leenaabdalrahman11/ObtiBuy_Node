@@ -23,7 +23,7 @@ if ((password || '').trim() !== (confirmpassword || '').trim()) {
             email,
             password: hashedPassword
         });
-        await sendEmail(email,"confirm email");
+     //   await sendEmail(email,"confirm email");
         const token = jwt.sign({email},process.env.CONFIRMEMAILSIGNAL);
         const html = `
         <div>
