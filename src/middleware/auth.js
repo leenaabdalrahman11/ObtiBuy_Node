@@ -1,12 +1,13 @@
 import jwt from "jsonwebtoken";
 
+
 export const auth = () => (req, res, next) => {
     try {
         const h = req.headers.authorization || req.headers.Authorization;
         if (!h) return res.status(401).json({ message: "Missing Authorization header" });
 
-        if (!/^Bearer\s+/i.test(h)) {
-            return res.status(401).json({ message: "Invalid scheme (use: Bearer <token>)" });
+     if (!/^Leena\s+/i.test(h)) {
+            return res.status(401).json({ message: "Invalid scheme (use: Leena <token>)" });
         }
         const token = h.split(" ")[1]?.trim();
         if (!token) return res.status(401).json({ message: "Empty token" });
