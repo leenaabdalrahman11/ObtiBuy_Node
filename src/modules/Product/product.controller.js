@@ -26,6 +26,7 @@ export const create=async (req,res)=>{
     req.body.mainImage = {secure_url,public_id};
     req.body.createdBy = req.id;
     req.body.updatesBy = req.id;
+    req.body.CategoryId = categoryId;
 
     const product = await ProductModel.create(req.body);
     return res.status(201).json({message:"success",product});
@@ -33,15 +34,14 @@ export const create=async (req,res)=>{
 
 
 export const get = async(req,res)=>{
-    const products = await ProductModel.find({}).select('name description mainImage Price discount');
+    const products = await ProductModel.find({}).select('name description mainImage Price discount CategoryId');
     return res.status(200).json({message:"success",products});
 }
 
 export const getActive = async(req,res)=>{
-    const products = await ProductModel.find({status:'active'}).select('name description mainImage Price discount');
+    const products = await ProductModel.find({status:'active'}).select('name description mainImage Price discount CategoryId');
     return res.status(200).json({message:"success",products});
 }
-
 export const getDetails = async(req,res)=>{
     const {id} = req.params;
     const products = await ProductModel.findById(id).select('-discount');
