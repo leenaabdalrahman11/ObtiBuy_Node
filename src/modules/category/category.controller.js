@@ -15,8 +15,6 @@ export const create = async (req, res) => {
   req.body.updatedBy = req.id;    
   const category = await categoryModel.create(req.body)
   return res.status(201).json({message:"success",category});
-
-  //return res.json(req.id);
 };
  
 export const get =async (req,res)=>{
