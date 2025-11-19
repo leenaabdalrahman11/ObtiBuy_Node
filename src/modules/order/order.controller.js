@@ -56,7 +56,7 @@ export const create = async (req, res) => {
         couponName: couponName ?? '',
         address: req.body.address,
         phoneNumber: req.body.phoneNumber,
-        finalPrice: subTotal - (subTotal * ((req.body.coupon.amount || 0)) / 100),
+        finalPrice: subTotal - (subTotal * ((req.body.coupon?.amount || 0)) / 100),
     });
     //decrease product stock
     for (const product of cart.products) {
