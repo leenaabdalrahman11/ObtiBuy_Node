@@ -45,7 +45,7 @@ export const getActive = async(req,res)=>{
 }
 export const getDetails = async(req,res)=>{
     const {id} = req.params;
-    const products = await ProductModel.findById(id).select('-discount');
+    const products = await ProductModel.findById(id).select('-discount').populate('reviews');
         return res.status(200).json({message:"success",products});
 
 }

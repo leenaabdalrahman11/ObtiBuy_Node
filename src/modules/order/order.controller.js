@@ -56,7 +56,7 @@ export const create = async (req, res) => {
         couponName: couponName ?? '',
         address: req.body.address,
         phoneNumber: req.body.phoneNumber,
-        finalPrice: subTotal - (subTotal * ((req.body.coupon.amount || 0)) / 100),
+        finalPrice: subTotal - (subTotal * ((req.body.coupon?.amount || 0)) / 100),
     });
     //decrease product stock
     for (const product of cart.products) {
@@ -103,6 +103,7 @@ export const changeStatus = async (req, res) => {
         return res.status(404).json({ message: "order not found" });
 
     }
+    console.log("update");
     if (order.status == 'deliverd') {
         return res.status(404).json({ message: "can't cancel this order" });
     }
