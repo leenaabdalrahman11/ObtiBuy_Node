@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-
+import userModel from "../../DB/models/user.model.js"; 
 export const auth = (accessRole = []) => {
   if (!Array.isArray(accessRole)) {
     accessRole = [accessRole];
