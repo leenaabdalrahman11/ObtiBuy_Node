@@ -103,6 +103,7 @@ export const changeStatus = async (req, res) => {
         return res.status(404).json({ message: "order not found" });
 
     }
+    console.log("update");
     if (order.status == 'deliverd') {
         return res.status(404).json({ message: "can't cancel this order" });
     }
