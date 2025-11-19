@@ -5,14 +5,23 @@ import cloudinary from "../../utils/cloudinary.js";
 
 export const create = async (req, res) => {
   const { name } = req.body;
+      if (!name) {
+      return res.status(400).json({ message: "Category name is required" });
+    }
+
   const {secure_url,public_id} = await cloudinary.uploader.upload(
           req.files.image[0].path,
       {folder:`${process.env.APP_NAME}/categories/${name}`}
   );
   req.body.image = {secure_url,public_id};
-  req.body.slug = slugify(name);
+      req.body.slug = slugify(name, {
+      lower: true,
+      strict: true,
+      trim: true,
+    });
+
   req.body.createdBy = req.id;
-  req.body.updatedBy = req.id;    
+  req.body.updatesBy = req.id;    
   const category = await categoryModel.create(req.body)
   return res.status(201).json({message:"success",category});
 };
@@ -48,8 +57,12 @@ export const update = async(req,res)=>{
   }
   
   category.name = name;
-  category.updatedBy = userId;
-  category.slug = slugify(name);
+  category.updatesBy = userId;
+  category.slug = slugify(name, {
+        lower: true,
+        strict: true,
+        trim: true,
+      });
   category.status = req.body.status;
   await category.save();
   return res.status(200).json({message:"update"});
