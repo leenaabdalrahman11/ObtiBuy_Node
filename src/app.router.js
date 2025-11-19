@@ -5,6 +5,7 @@ import categoryRouter from './modules/category/category.router.js';
 import productRouter from './modules/Product/product.router.js';
 import couponRouter from './modules/coupon/coupon.router.js'
 import cartRouter from './modules/cart/cart.router.js';
+import orderRouter from './modules/order/order.router.js';
 
 const initApp = async (app, express) => {
   app.use(cors({
@@ -24,6 +25,7 @@ const initApp = async (app, express) => {
   app.use('/products', productRouter);
   app.use('/coupon',couponRouter);
   app.use('/cart',cartRouter);
+  app.use('/order',orderRouter);
 
   app.use((req, res) => res.status(404).json({ message: 'Route not found' }));
 };
