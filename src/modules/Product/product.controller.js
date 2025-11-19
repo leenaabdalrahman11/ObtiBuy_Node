@@ -3,7 +3,7 @@ import cloudinary from "../../utils/cloudinary.js";
 import categoryModel from '../../../DB/models/category.model.js';
 import slugify from "slugify";
 export const create=async (req,res)=>{
-    const {name,categoryId}= req.body;
+    const {name,categoryId,discount,price}= req.body;
     const checkCategory = await categoryModel.findById(categoryId);
     if(!checkCategory){
         return res.status(404).json({message:"category not found"});
@@ -27,6 +27,7 @@ export const create=async (req,res)=>{
     req.body.createdBy = req.id;
     req.body.updatesBy = req.id;
     req.body.CategoryId = categoryId;
+    req.body.priceAfterDiscount = price - (price * (discount || 0) / 100);
 
     const product = await ProductModel.create(req.body);
     return res.status(201).json({message:"success",product});
@@ -34,7 +35,7 @@ export const create=async (req,res)=>{
 
 
 export const get = async(req,res)=>{
-    const products = await ProductModel.find({}).select('name description mainImage Price discount CategoryId');
+    const products = await ProductModel.find({}).select('name description mainImage Price discount CategoryId priceAfterDiscount');
     return res.status(200).json({message:"success",products});
 }
 
