@@ -6,27 +6,26 @@ const reviewSchema = new Schema(
       type: String,
       required: true,
     },
-    rating:{
-        type:Number,
-        required:true,
-        min:1,
-        max:5,
+    rating: {
+      type: Number,
+      required: true,
+      min: 1,
+      max: 5,
     },
-    createdBy:{
-        type:Types.ObjectId,
-        ref:'User',
-        required:true
+    createdBy: {
+      type: Types.ObjectId,
+      ref: "User",
+      required: true,
     },
-    productId:{
-        type:Types.ObjectId,
-        ref:'Product',
-        required:true
-    }
-},
+    productId: {
+      type: Types.ObjectId,
+      ref: "Product",
+      required: true,
+    },
+  },
   { timestamps: true }
 );
 
-const reviewModel =
-  mongoose.models.Coupon || model("Review", reviewSchema);
+const reviewModel = mongoose.models.Coupon || model("Review", reviewSchema);
 
 export default reviewModel;

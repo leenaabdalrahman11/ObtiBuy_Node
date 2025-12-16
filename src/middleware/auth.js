@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import userModel from "../../DB/models/user.model.js"; 
+import userModel from "../../DB/models/user.model.js";
 export const auth = (accessRole = []) => {
   if (!Array.isArray(accessRole)) {
     accessRole = [accessRole];
@@ -9,7 +9,9 @@ export const auth = (accessRole = []) => {
     try {
       const h = req.headers.authorization || req.headers.Authorization;
       if (!h) {
-        return res.status(401).json({ message: "Missing Authorization header" });
+        return res
+          .status(401)
+          .json({ message: "Missing Authorization header" });
       }
 
       if (!/^Leena\s+/i.test(h)) {
@@ -42,7 +44,7 @@ export const auth = (accessRole = []) => {
       }
 
       req.user = user;
-      req.id = user._id; 
+      req.id = user._id;
 
       return next();
     } catch (err) {

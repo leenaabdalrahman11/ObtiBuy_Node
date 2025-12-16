@@ -1,78 +1,85 @@
 import mongoose, { model, Schema, Types } from "mongoose";
 
-const productSchema = new Schema({
-  name: {
-    type: String,
-    required: true,
-    unique:true,
-    trim:true,
-    minlength: 3,
-    maxlength: 50
-  },
-  description:{
-    type:String,
-  },
-  stock:{
-    type:Number,
-    default:1
-  },
-  price:{
-    type:Number,
-
-  },
-  discount:{
-    type:Number,
-    default:0
-  },
-  priceAfterDiscount:{
-    type:Number
-  },
-  mainImage: {
-    type: Object,
-  },
-  subImages:[
-    {
-        type:Object,
+const productSchema = new Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+      unique: true,
+      trim: true,
+      minlength: 3,
+      maxlength: 50,
     },
-],
-  status: {
-    type: String,
-    enum: ['active', 'not_active'],
-    default: 'active'
-  },
+    description: {
+      type: String,
+    },
+    stock: {
+      type: Number,
+      default: 1,
+    },
+    price: {
+      type: Number,
+    },
+    discount: {
+      type: Number,
+      default: 0,
+    },
+    priceAfterDiscount: {
+      type: Number,
+    },
+    mainImage: {
+      type: Object,
+    },
+    subImages: [
+      {
+        type: Object,
+      },
+    ],
 
-  createdBy: {
-    type: Types.ObjectId,
-    ref: 'User'
-  },
+    subCategoryId: { type: Types.ObjectId, ref: "SubCategory", default: null },
+    status: {
+      type: String,
+      enum: ["active", "not_active"],
+      default: "active",
+    },
+    tags: {
+      type: [String],
+      default: [],
+    },
 
-  updatesBy: {
-    type: Types.ObjectId,
-    ref: 'User'
-  },
+    createdBy: {
+      type: Types.ObjectId,
+      ref: "User",
+    },
 
-  slug: {
-    type: String,
-    required: true,
-    trim: true
+    updatesBy: {
+      type: Types.ObjectId,
+      ref: "User",
+    },
+
+    slug: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    colors: [String],
+    sizes: [
+      {
+        type: [String],
+        enum: ["small", "medium", "large", "xlarge"],
+      },
+    ],
+    CategoryId: {
+      type: Types.ObjectId,
+      ref: "Category",
+    },
   },
-  colors:[String],
-  sizes:[{
-    type:[String],
-    enum:['small','medium','large','xlarge']
-  }],
-  CategoryId:{
-    type: Types.ObjectId,
-    ref: 'Category'
-  }
-}, { timestamps: true,
-  toJSON:{virtuals:true},
-  toObject:{virtuals:true}
- });
-productSchema.virtual('reviews',{
-  ref:"Review",
-  localField:"_id",
-  foreignField:"productId"
-})
-const ProductModel= mongoose.models.Product || model("Product", productSchema);
+  { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
+);
+productSchema.virtual("reviews", {
+  ref: "Review",
+  localField: "_id",
+  foreignField: "productId",
+});
+const ProductModel = mongoose.models.Product || model("Product", productSchema);
 export default ProductModel;
