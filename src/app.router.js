@@ -12,6 +12,7 @@ import dashboardRoutes from "./modules/dashboard/dashboard.router.js";
 import reviewRouter from "./modules/review/review.router.js";
 import userRouter from "./modules/user/user.router.js";
 import settingsRouter from "./modules/settings/settings.router.js";
+import searchRouter from "./modules/search/search.routes.js";
 const initApp = async (app, express) => {
   app.use(
     cors({
@@ -40,6 +41,7 @@ const initApp = async (app, express) => {
   app.use("/settings", settingsRouter);
 
   app.use("/subcategory", subCategoryRouter);
+  app.use("/search", searchRouter);
   app.use((req, res) => res.status(404).json({ message: "Route not found" }));
 };
 
