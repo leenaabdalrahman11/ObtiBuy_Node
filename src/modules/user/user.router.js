@@ -12,13 +12,25 @@ router.post(
   controller.create
 );
 
+router.get("/profile", auth(["user", "admin"]), controller.getProfile);
+router.put(
+  "/profile",
+  auth(["user", "admin"]),
+  upload.fields([{ name: "image", maxCount: 1 }]),
+  controller.updateProfile
+);
+
 router.get("/", auth(["admin"]), controller.get);
+
 router.get("/:id", auth(["admin"]), controller.getDetails);
+
 router.put(
   "/:id",
   auth(["admin"]),
   upload.fields([{ name: "image", maxCount: 1 }]),
   controller.update
 );
+
 router.delete("/:id", auth(["admin"]), controller.remove);
+
 export default router;
