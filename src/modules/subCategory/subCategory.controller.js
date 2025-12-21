@@ -1,6 +1,8 @@
 import slugify from "slugify";
 import subCategoryModel from "../../../DB/models/subcategory.model.js";
 import userModel from "../../../DB/models/user.model.js";
+import ProductModel from "../../../DB/models/product.model.js";
+
 import cloudinary from "../../utils/cloudinary.js";
 const addDefaultImage = (sub) => {
   if (!sub.image) {
@@ -122,4 +124,63 @@ export const getByCategory = async (req, res) => {
   const { categoryId } = req.params;
   const subCategories = await subCategoryModel.find({ category: categoryId });
   return res.status(200).json({ subCategories });
+};
+
+export const getProductsBySubCategory = async (req, res) => {
+  try {
+    const { subCategoryId } = req.params;
+
+    const {
+      page = 1,
+      limit = 10,
+      sort = "-createdAt",
+      search,
+      status,         
+      minPrice,
+      maxPrice,
+    } = req.query;
+
+    if (!subCategoryId) {
+      return res.status(400).json({ message: "subCategoryId is required" });
+    }
+
+    const filter = { subCategoryId };
+
+    if (status) {
+      filter.status = status; 
+    }
+
+    if (search) {
+      filter.name = { $regex: search, $options: "i" };
+    }
+
+    if (minPrice || maxPrice) {
+      filter.price = {};
+      if (minPrice) filter.price.$gte = Number(minPrice);
+      if (maxPrice) filter.price.$lte = Number(maxPrice);
+    }
+
+    const skip = (Number(page) - 1) * Number(limit);
+
+    const [products, total] = await Promise.all([
+      ProductModel.find(filter)
+        .sort(sort)
+        .skip(skip)
+        .limit(Number(limit)),
+      ProductModel.countDocuments(filter),
+    ]);
+
+    return res.status(200).json({
+      message: "success",
+      page: Number(page),
+      limit: Number(limit),
+      total,
+      totalPages: Math.ceil(total / Number(limit)),
+      products,
+    });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "server error", error: error.message });
+  }
 };

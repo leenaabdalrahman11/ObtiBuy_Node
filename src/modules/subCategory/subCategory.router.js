@@ -7,6 +7,7 @@ import {
   updateSubCategory,
   removeSubCategory,
   getByCategory,
+  getProductsBySubCategory,
 } from "./subCategory.controller.js";
 import fileUpload, { fileValidation } from "../../utils/multer.js";
 
@@ -25,6 +26,8 @@ router.get("/active", getActive);
 router.get("/:id", subCategoryDetails);
 
 router.get("/byCategory/:categoryId", getByCategory);
+router.get("/:subCategoryId/products", getProductsBySubCategory);
+
 
 router.put(
   "/:id",
