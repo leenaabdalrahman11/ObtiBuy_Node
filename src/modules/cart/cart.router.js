@@ -13,5 +13,4 @@ router.delete("/",controller.clearCart);
 router.patch("/increase/:productId", controller.increaseQty);
 router.patch("/decrease/:productId",  controller.decreaseQty);
 
-
 export default router;

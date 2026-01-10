@@ -5,7 +5,6 @@ import fileUpload, { fileValidation } from '../../utils/multer.js';
 
 const router = Router();
 
-
 router.post('/',auth(['admin']),controller.create);
 router.get('/',auth(['admin']) ,controller.get);
 

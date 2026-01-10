@@ -14,10 +14,10 @@ export const auth = (accessRole = []) => {
           .json({ message: "Missing Authorization header" });
       }
 
-      if (!/^Leena\s+/i.test(h)) {
+      if (!/^Bearer\s+/i.test(h)) {
         return res
           .status(401)
-          .json({ message: "Invalid scheme (use: Leena <token>)" });
+          .json({ message: "Invalid scheme (use: Bearer <token>)" });
       }
 
       const token = h.split(" ")[1]?.trim();

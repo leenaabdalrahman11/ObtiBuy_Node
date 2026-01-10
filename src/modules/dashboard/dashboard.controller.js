@@ -3,6 +3,7 @@ import Product from "../../../DB/models/product.model.js";
 import Order from "../../../DB/models/order.model.js";
 import slugify from "slugify";
 import Category from "../../../DB/models/category.model.js";
+import cloudinary from "../../utils/cloudinary.js";
 
 export const getUsersCount = async (req, res) => {
   try {
@@ -41,44 +42,170 @@ export const getRevenue = async (req, res) => {
   }
 };
 
+
 export const getSalesData = async (req, res) => {
   try {
-    const salesData = [];
-    const today = new Date();
-    for (let i = 6; i >= 0; i--) {
-      const day = new Date(today);
-      day.setDate(today.getDate() - i);
-      const start = new Date(day.setHours(0, 0, 0, 0));
-      const end = new Date(day.setHours(23, 59, 59, 999));
+    const range = (req.query.range || "week").toLowerCase();
 
-      const orders = await Order.find({
-        createdAt: { $gte: start, $lte: end },
-      });
-      const total = orders.reduce((sum, order) => sum + order.finalPrice, 0);
+    const now = new Date();
+    const end = new Date(now);
+    end.setHours(23, 59, 59, 999);
 
-      const weekday = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][
-        start.getDay()
-      ];
-      salesData.push({ day: weekday, sales: total });
+    let start = new Date(now);
+    start.setHours(0, 0, 0, 0);
+
+    if (range === "month") {
+      start.setDate(start.getDate() - 29); 
+    } else if (range === "year") {
+      start = new Date(now.getFullYear(), now.getMonth() - 11, 1); 
+      start.setHours(0, 0, 0, 0);
+    } else {
+      start.setDate(start.getDate() - 6); 
     }
-    return res.status(200).json({ message: "success", salesData });
+
+    const matchStage = {
+      $match: {
+        createdAt: { $gte: start, $lte: end },
+      },
+    };
+
+    let groupStage;
+    let projectStage;
+
+    if (range === "year") {
+      groupStage = {
+        $group: {
+          _id: { y: { $year: "$createdAt" }, m: { $month: "$createdAt" } },
+          sales: { $sum: "$finalPrice" },
+        },
+      };
+      projectStage = {
+        $project: {
+          _id: 0,
+          monthNum: "$_id.m",
+          yearNum: "$_id.y",
+          sales: 1,
+        },
+      };
+    } else if (range === "month") {
+      groupStage = {
+        $group: {
+          _id: {
+            y: { $year: "$createdAt" },
+            m: { $month: "$createdAt" },
+            d: { $dayOfMonth: "$createdAt" },
+          },
+          sales: { $sum: "$finalPrice" },
+        },
+      };
+      projectStage = {
+        $project: {
+          _id: 0,
+          y: "$_id.y",
+          m: "$_id.m",
+          d: "$_id.d",
+          sales: 1,
+        },
+      };
+    } else {
+      groupStage = {
+        $group: {
+          _id: {
+            y: { $year: "$createdAt" },
+            m: { $month: "$createdAt" },
+            d: { $dayOfMonth: "$createdAt" },
+          },
+          sales: { $sum: "$finalPrice" },
+        },
+      };
+      projectStage = {
+        $project: {
+          _id: 0,
+          y: "$_id.y",
+          m: "$_id.m",
+          d: "$_id.d",
+          sales: 1,
+        },
+      };
+    }
+
+    const raw = await Order.aggregate([matchStage, groupStage, projectStage]);
+
+    const salesData = [];
+
+    if (range === "year") {
+      const monthNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+      const map = new Map(raw.map(r => [`${r.yearNum}-${r.monthNum}`, r.sales]));
+
+      for (let i = 11; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const key = `${d.getFullYear()}-${d.getMonth() + 1}`;
+        salesData.push({
+          month: monthNames[d.getMonth()],
+          sales: map.get(key) || 0,
+        });
+      }
+    } else if (range === "month") {
+      const map = new Map(
+        raw.map(r => [`${r.y}-${r.m}-${r.d}`, r.sales])
+      );
+
+      for (let i = 29; i >= 0; i--) {
+        const d = new Date(now);
+        d.setDate(now.getDate() - i);
+        const y = d.getFullYear();
+        const m = d.getMonth() + 1;
+        const dayNum = d.getDate();
+        const key = `${y}-${m}-${dayNum}`;
+
+        const label = d.toLocaleDateString("en-US", { day: "2-digit", month: "short" }); 
+        salesData.push({ date: label, sales: map.get(key) || 0 });
+      }
+    } else {
+      const weekdays = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+      const map = new Map(
+        raw.map(r => [`${r.y}-${r.m}-${r.d}`, r.sales])
+      );
+
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date(now);
+        d.setDate(now.getDate() - i);
+        const y = d.getFullYear();
+        const m = d.getMonth() + 1;
+        const dayNum = d.getDate();
+        const key = `${y}-${m}-${dayNum}`;
+
+        salesData.push({
+          day: weekdays[d.getDay()],
+          sales: map.get(key) || 0,
+        });
+      }
+    }
+
+    return res.status(200).json({ message: "success", range, salesData });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
 };
 
+
 export const getRecentOrders = async (req, res) => {
   try {
     const recentOrders = await Order.find()
       .sort({ createdAt: -1 })
-      .limit(5)
-      .populate("userId", "userName");
-    const orders = recentOrders.map((o) => ({
-      id: o._id,
-      customer: o.userId.userName,
-      status: o.status,
-      amount: o.finalPrice,
-    }));
+      .limit(15)
+      .populate("userId", "userName image");
+      
+console.log("user sample:", recentOrders[0]?.userId);
+const orders = recentOrders.map((o) => ({
+  id: o._id,
+  customer: o.userId?.userName || "Unknown",
+  image: o.userId?.image?.secure_url || null,
+  status: o.status,
+  amount: o.finalPrice,
+  date: o.createdAt,
+}));
+
     return res.status(200).json({ message: "success", orders });
   } catch (error) {
     return res.status(500).json({ message: error.message });
@@ -86,10 +213,35 @@ export const getRecentOrders = async (req, res) => {
 };
 export const getTotalRevenue = async (req, res) => {
   try {
-    console.log("GET /dashboard/orders/revenue called");
+    const range = String(req.query.range || "year"); 
+
+    const now = new Date();
+    let startDate;
+
+    if (range === "week") {
+      startDate = new Date(now);
+      startDate.setDate(now.getDate() - 6);
+      startDate.setHours(0, 0, 0, 0);
+    } else if (range === "month") {
+      startDate = new Date(now);
+      startDate.setDate(now.getDate() - 29);
+      startDate.setHours(0, 0, 0, 0);
+    } else {
+      startDate = new Date(now);
+      startDate.setMonth(now.getMonth() - 11);
+      startDate.setDate(1);
+      startDate.setHours(0, 0, 0, 0);
+    }
+
+    const deliveredStatus = "delivered";
 
     const result = await Order.aggregate([
-      { $match: { status: "deliverd" } },
+      {
+        $match: {
+          status: deliveredStatus,
+          createdAt: { $gte: startDate, $lte: now },
+        },
+      },
       {
         $group: {
           _id: null,
@@ -98,17 +250,20 @@ export const getTotalRevenue = async (req, res) => {
       },
     ]);
 
-    console.log("Aggregation result:", result);
-
     const totalRevenue = result[0]?.totalRevenue ?? 0;
-    console.log("Computed totalRevenue:", totalRevenue);
 
-    return res.status(200).json({ message: "success", totalRevenue });
+    return res.status(200).json({
+      message: "success",
+      range,
+      from: startDate,
+      to: now,
+      totalRevenue,
+    });
   } catch (error) {
-    console.error("getTotalRevenue error:", error);
     return res.status(500).json({ message: error.message });
   }
 };
+
 export const testFetchOrders = async (req, res) => {
   try {
     const orders = await Order.find()
@@ -230,5 +385,175 @@ export const update = async (req, res) => {
   } catch (err) {
     console.error("UPDATE ERROR:", err);
     return res.status(500).json({ message: err.message });
+  }
+};
+
+
+
+
+function getRangeDates(range = "week") {
+  const r = String(range || "week").toLowerCase();
+  const now = new Date();
+  const end = new Date(now);
+  end.setHours(23, 59, 59, 999);
+
+  let start = new Date(now);
+  start.setHours(0, 0, 0, 0);
+
+  if (r === "month") {
+    start.setDate(start.getDate() - 29);
+  } else if (r === "year") {
+    start = new Date(now.getFullYear(), now.getMonth() - 11, 1);
+    start.setHours(0, 0, 0, 0);
+  } else {
+    start.setDate(start.getDate() - 6);
+  }
+  return { start, end, range: r };
+}
+
+function normalizeStatus(s) {
+  const st = String(s || "").toLowerCase().trim();
+  if (st.includes("deliverd") || st.includes("delivered") || st.includes("complete")) return "complete";
+  if (st.includes("hold")) return "hold";
+  return "active";
+}
+
+export const getDashboardOverview = async (req, res) => {
+  try {
+    const { start, end, range } = getRangeDates(req.query.range);
+
+    const [usersCount, productsCount] = await Promise.all([
+      User.countDocuments(),
+      Product.countDocuments(),
+    ]);
+
+    const ordersInRange = await Order.find({
+      createdAt: { $gte: start, $lte: end },
+    })
+      .select("status finalPrice total createdAt items userId")
+      .populate("userId", "userName image")
+      .lean();
+
+    const totalOrders = ordersInRange.length;
+
+    const totalRevenue = ordersInRange.reduce((acc, o) => {
+      const v = Number(o.finalPrice ?? o.total ?? 0) || 0;
+      return acc + v;
+    }, 0);
+
+    const recentOrdersRaw = await Order.find()
+      .sort({ createdAt: -1 })
+      .limit(15)
+      .populate("userId", "userName image")
+      .lean();
+
+    const recentOrders = recentOrdersRaw.map((o) => ({
+      id: o._id,
+      customer: o.userId?.userName || "Unknown",
+      image: o.userId?.image?.secure_url || null,
+      status: o.status,
+      amount: o.finalPrice ?? o.total ?? 0,
+      date: o.createdAt,
+    }));
+
+    const saleStatus = { active: 0, complete: 0, hold: 0 };
+    for (const o of ordersInRange) {
+      const key = normalizeStatus(o.status);
+      saleStatus[key]++;
+    }
+
+    const target = 60000;
+    const achieved = totalRevenue;
+    const progress = target > 0 ? Math.min(achieved / target, 1) : 0;
+
+    let topCategories = [];
+    try {
+      topCategories = await Order.aggregate([
+        { $match: { createdAt: { $gte: start, $lte: end } } },
+        { $unwind: "$items" },
+        {
+          $lookup: {
+            from: "products",
+            localField: "items.productId",
+            foreignField: "_id",
+            as: "p",
+          },
+        },
+        { $unwind: "$p" },
+        {
+          $addFields: {
+            catId: { $ifNull: ["$p.categoryId", "$p.CategoryId"] },
+            lineTotal: {
+              $multiply: [
+                { $ifNull: ["$items.quantity", 1] },
+                { $ifNull: ["$items.price", "$p.priceAfterDiscount"] },
+              ],
+            },
+          },
+        },
+        {
+          $group: {
+            _id: "$catId",
+            sales: { $sum: { $ifNull: ["$lineTotal", 0] } },
+          },
+        },
+        {
+          $lookup: {
+            from: "categories",
+            localField: "_id",
+            foreignField: "_id",
+            as: "c",
+          },
+        },
+        { $unwind: { path: "$c", preserveNullAndEmptyArrays: true } },
+        {
+          $project: {
+            _id: 0,
+            categoryId: "$_id",
+            name: { $ifNull: ["$c.name", "Unknown"] },
+            sales: 1,
+          },
+        },
+        { $sort: { sales: -1 } },
+        { $limit: 4 },
+      ]);
+    } catch (e) {
+      topCategories = [];
+    }
+
+
+    const trafficSources = [];
+
+    const visitorsApprox = new Set(
+      ordersInRange.map((o) => String(o.userId?._id || "")).filter(Boolean)
+    ).size;
+
+    return res.status(200).json({
+      message: "success",
+      range,
+      from: start,
+      to: end,
+      kpis: {
+        users: usersCount,
+        products: productsCount,
+        orders: totalOrders,
+        revenue: totalRevenue,
+        visitors: visitorsApprox,
+      },
+      monthlyTarget: {
+        target,
+        achieved,
+        progress,
+      },
+      saleStatus,
+      topCategories,
+      trafficSources: {
+        supported: false,
+        items: trafficSources,
+      },
+      recentOrders,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
   }
 };

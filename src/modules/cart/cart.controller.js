@@ -49,13 +49,16 @@ export const addToCart = async (req, res) => {
 
     let cart = await CartModel.findOne(query);
 
-    if (!cart) {
-      cart = await CartModel.create({
-        userId: query.userId || null,
-        sessionId: query.sessionId || null,
-        products: [],
-      });
-    }
+if (!cart) {
+  const payload = { products: [] };
+
+  if (query.userId) payload.userId = query.userId;
+  if (query.sessionId) payload.sessionId = query.sessionId;
+
+  cart = await CartModel.create(payload);
+}
+console.log("- sessionId:", req.headers["x-session-id"]);
+
 
     const productExists = cart.products.find(
       (p) => p.productId.toString() === productId.toString()

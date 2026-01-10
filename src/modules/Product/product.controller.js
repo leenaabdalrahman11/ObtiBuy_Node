@@ -4,7 +4,7 @@ import categoryModel from "../../../DB/models/category.model.js";
 import slugify from "slugify";
 import subcategoryModel from "../../../DB/models/subcategory.model.js";
 import SettingsModel from "../../../DB/models/settings.model.js";
-
+import ReviewModel from "../../../DB/models/review.model.js";
 export const create = async (req, res) => {
   const { name, CategoryId, discount, price, stock, subCategoryId } = req.body;
 
@@ -103,7 +103,7 @@ export const remove = async (req, res) => {
   if (!product) {
     return res.status(404).json({ message: "not found" });
   }
-
+await ReviewModel.deleteMany({ productId: id }); 
   await cloudinary.uploader.destroy(product.mainImage.public_id);
   if (product.subImages && product.subImages.length) {
     for (const img of product.subImages) {

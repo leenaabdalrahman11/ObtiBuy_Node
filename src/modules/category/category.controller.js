@@ -7,25 +7,38 @@ import { subCategoryDetails } from "../subCategory/subCategory.controller.js";
 import CategoryModel from "../../../DB/models/category.model.js";
 
 export const create = async (req, res) => {
-  const { name } = req.body;
+  try {
+    const { name } = req.body;
 
-  if (!name) {
-    return res.status(400).json({ message: "Category name is required" });
+    if (!name) {
+      return res.status(400).json({ message: "Category name is required" });
+    }
+
+    const file = req?.files?.image?.[0];
+    if (!file?.path) {
+      return res.status(400).json({ message: "Category image is required" });
+    }
+
+    const { secure_url, public_id } = await cloudinary.uploader.upload(
+      file.path,
+      { folder: `${process.env.APP_NAME}/categories/${name}` }
+    );
+
+    req.body.image = { secure_url, public_id };
+    req.body.slug = slugify(name, { lower: true, strict: true, trim: true });
+    req.body.createdBy = req.id;
+    req.body.updatesBy = req.id;
+
+    const category = await categoryModel.create(req.body);
+    return res.status(201).json({ message: "success", category });
+  } catch (error) {
+    console.error("Create category error:", error);
+    return res.status(500).json({
+      message: error.message || "Internal Server Error",
+    });
   }
-
-  const { secure_url, public_id } = await cloudinary.uploader.upload(
-    req.files.image[0].path,
-    { folder: `${process.env.APP_NAME}/categories/${name}` }
-  );
-
-  req.body.image = { secure_url, public_id };
-  req.body.slug = slugify(name, { lower: true, strict: true, trim: true });
-  req.body.createdBy = req.id;
-  req.body.updatesBy = req.id;
-
-  const category = await categoryModel.create(req.body);
-  return res.status(201).json({ message: "success", category });
 };
+
 
 export const get = async (req, res) => {
   try {
@@ -112,4 +125,5 @@ export const remove = async (req, res) => {
   await cloudinary.uploader.destroy(category.image.public_id);
 
   return res.status(200).json({ message: "category is removed" });
+  
 };

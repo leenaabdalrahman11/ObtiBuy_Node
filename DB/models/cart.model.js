@@ -16,7 +16,14 @@ const cartSchema = new Schema(
 
 cartSchema.index({ userId: 1 }, { unique: true, sparse: true });
 
-cartSchema.index({ sessionId: 1 }, { unique: true, sparse: true });
+cartSchema.index(
+  { sessionId: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { sessionId: { $type: "string" } }
+  }
+);
+
 
 const CartModel = mongoose.models.Cart || model("Cart", cartSchema);
 export default CartModel;

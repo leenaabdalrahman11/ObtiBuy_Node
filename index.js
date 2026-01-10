@@ -1,9 +1,10 @@
 import express from 'express';
-
 import cors from 'cors';
 import initApp from './src/app.router.js';
 import 'dotenv/config';
+
 console.log("ENV LOADED:", process.env.CLOUDINARY_API_KEY ? "OK" : "MISSING");
+console.log("APP_NAME:", process.env.APP_NAME);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
