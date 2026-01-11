@@ -4,15 +4,15 @@ const orderSchema = new Schema(
   {
     userId: {
       type: Types.ObjectId,
+      unique: false,
       ref: "User",
-      required: true,
     },
 
     products: [
       {
-        productName:{
-            type:String,
-            required:true
+        productName: {
+          type: String,
+          required: true,
         },
         productId: {
           type: Types.ObjectId,
@@ -23,47 +23,50 @@ const orderSchema = new Schema(
           type: Number,
           default: 1,
         },
-        unitPrice:{
-            type:Number,
-            required:true,
+        unitPrice: {
+          type: Number,
+          required: true,
         },
-        finalPrice:{
-            type:Number,
-            required:true
-        }
+        finalPrice: {
+          type: Number,
+          required: true,
+        },
       },
     ],
-    couponName:{
-        type:String
+    couponName: {
+      type: String,
     },
-    finalPrice:{
-        type:Number,
-        required:true
+    finalPrice: {
+      type: Number,
+      required: true,
     },
-    paymentType:{
-        type:String,
-        default:'cash',
-        enum:['cash','card']
+    paymentType: {
+      type: String,
+      default: "cash",
+      enum: ["cash", "card"],
     },
-    phoneNumber:{
-        type:String,
-        required:true
+    phoneNumber: {
+      type: String,
+      required: true,
     },
-    address:{
-        type:String,
-        required:true
+    address: {
+      type: String,
+      required: true,
     },
-    status:{
-        type:String,
-        default:'pending',
-        enum:['pending','cancelled','confirmed','onWay','deliverd']
+    status: {
+      type: String,
+      default: "pending",
+      enum: ["pending", "cancelled", "confirmed", "onWay", "delivered", "received"],
     },
-    note:String,
-    reasonrejected:String,
-    updatedBy:{
-        type:Types.ObjectId,
-        ref:'User'
-    }
+    note: String,
+    reasonrejected: String,
+    updatedBy: {
+      type: Types.ObjectId,
+      ref: "User",
+    },
+receivedByUser: { type: Boolean, default: false },
+receivedAt: { type: Date, default: null },
+
   },
   { timestamps: true }
 );
