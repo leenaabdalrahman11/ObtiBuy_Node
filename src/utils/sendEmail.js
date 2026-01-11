@@ -2,12 +2,12 @@ import nodemailer from "nodemailer";
 
 export async function sendEmail(to, subject, html) {
   const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: Number(process.env.SMTP_PORT || 587),
+    host: "smtp-relay.brevo.com",
+    port: 587,
     secure: false,
     auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
+      user: process.env.SENDER_EMAIL,
+      pass: process.env.SENDER_PASS,
     },
   });
 
@@ -18,10 +18,8 @@ export async function sendEmail(to, subject, html) {
     html,
   });
 
-  return info.messageId;
+  return info;
 }
-
-
 
 
 /*import nodemailer from "nodemailer";

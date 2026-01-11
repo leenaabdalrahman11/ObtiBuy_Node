@@ -15,17 +15,29 @@ import settingsRouter from "./modules/settings/settings.router.js";
 import searchRouter from "./modules/search/search.routes.js";
 import promoSectionRoutes from "./modules/promoSections/promoSections.router.js";
 import homeSectionRoutes from "./modules/homeSection/homeSection.routes.js";
+import { sendEmail } from "./utils/sendEmail.js";
 
 const initApp = async (app, express) => {
+  const allowedOrigins = [
+    "http://localhost:5173",
+    "http://localhost:3000",
+    "https://react-opti-buy-ocui.vercel.app",
+  ];
+
   app.use(
     cors({
-      origin: "http://localhost:5173",
+      origin: (origin, cb) => {
+        if (!origin) return cb(null, true);
+        if (allowedOrigins.includes(origin)) return cb(null, true);
+        return cb(new Error("Not allowed by CORS"));
+      },
       credentials: true,
+      methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
       allowedHeaders: ["Content-Type", "Authorization"],
     })
   );
+
   app.use(express.json());
-  app.use(cors());
 
   await connectDb();
 
@@ -47,16 +59,26 @@ const initApp = async (app, express) => {
   app.use("/search", searchRouter);
   app.use("/api/promo-sections", promoSectionRoutes);
   app.use("/api/home-sections", homeSectionRoutes);
-app.get("/test-email", async (req, res) => {
-  await sendEmail(
-    "leenasa272@gmail.com",
-    "Brevo Test",
-    "<h1>It works 🎉</h1>"
-  );
-  res.send("sent");
-});
 
-  app.use((req, res) => res.status(404).json({ message: "Route not found" }));
+  app.get("/test-email", async (req, res) => {
+    try {
+      const info = await sendEmail(
+        process.env.TEST_EMAIL || process.env.SENDER_EMAIL,
+        "Brevo Test",
+        "<h1>It works</h1>"
+      );
+      res.status(200).json({ ok: true, messageId: info?.messageId });
+    } catch (e) {
+      res.status(500).json({
+        ok: false,
+        name: e?.name,
+        message: e?.message,
+        code: e?.code,
+        response: e?.response,
+        responseCode: e?.responseCode,
+      });
+    }
+  });
 };
 
 export default initApp;
