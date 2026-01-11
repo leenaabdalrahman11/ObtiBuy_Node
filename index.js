@@ -1,19 +1,26 @@
-import express from 'express';
-import cors from 'cors';
-import initApp from './src/app.router.js';
-import 'dotenv/config';
+import express from 'express'
+import cors from 'cors'
+import initApp from './src/app.router.js'
+import 'dotenv/config'
 
-console.log("ENV LOADED:", process.env.CLOUDINARY_API_KEY ? "OK" : "MISSING");
-console.log("APP_NAME:", process.env.APP_NAME);
+const app = express()
+const PORT = process.env.PORT || 10000
 
-const app = express();
-const PORT = process.env.PORT || 3000;
+app.use(express.json())
 
-app.use(express.json());
-app.use(cors());
+app.use(
+  cors({
+    origin: [
+      'http://localhost:5173',
+      'http://localhost:3000',
+      'https://react-opti-buy-ocui.vercel.app'
+    ],
+    credentials: true
+  })
+)
 
-initApp(app, express);
+initApp(app, express)
 
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+  console.log(`Server is running on port ${PORT}`)
+})
