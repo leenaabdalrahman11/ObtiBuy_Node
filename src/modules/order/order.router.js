@@ -11,6 +11,7 @@ router.post("/", auth(["user"]), controller.create);
 router.get("/", auth(["user"]), controller.getUserOrders);
 
 router.patch("/changeStatus/:orderId", auth(["admin"]), controller.changeStatus);
+router.patch("/:orderId/confirm-received", auth(["user"]), controller.confirmReceived);
 
 router.get("/:status", auth(["admin"]), controller.getOrdersByStatus);
 

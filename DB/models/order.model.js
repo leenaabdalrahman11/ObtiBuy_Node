@@ -56,7 +56,7 @@ const orderSchema = new Schema(
     status: {
       type: String,
       default: "pending",
-      enum: ["pending", "cancelled", "confirmed", "onWay", "delivered"],
+      enum: ["pending", "cancelled", "confirmed", "onWay", "delivered", "received"],
     },
     note: String,
     reasonrejected: String,
@@ -64,6 +64,9 @@ const orderSchema = new Schema(
       type: Types.ObjectId,
       ref: "User",
     },
+receivedByUser: { type: Boolean, default: false },
+receivedAt: { type: Date, default: null },
+
   },
   { timestamps: true }
 );

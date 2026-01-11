@@ -4,6 +4,8 @@ import Order from "../../../DB/models/order.model.js";
 import slugify from "slugify";
 import Category from "../../../DB/models/category.model.js";
 import cloudinary from "../../utils/cloudinary.js";
+import SearchLog from "../../../DB/models/searchLog.model.js";
+import MonthlyTarget from "../../../DB/models/monthlyTarget.model.js";
 
 export const getUsersCount = async (req, res) => {
   try {
@@ -462,9 +464,16 @@ export const getDashboardOverview = async (req, res) => {
       saleStatus[key]++;
     }
 
-    const target = 60000;
-    const achieved = totalRevenue;
-    const progress = target > 0 ? Math.min(achieved / target, 1) : 0;
+
+const now = new Date();
+const monthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+
+const targetDoc = await MonthlyTarget.findOne({ monthKey }).lean();
+const target = targetDoc?.target ?? 60000; 
+
+const achieved = totalRevenue;
+const progress = target > 0 ? Math.min(achieved / target, 1) : 0;
+
 
     let topCategories = [];
     try {
@@ -557,3 +566,86 @@ export const getDashboardOverview = async (req, res) => {
     return res.status(500).json({ message: error.message });
   }
 };
+
+export const updateMonthlyTarget = async (req, res) => {
+  try {
+    const { monthKey, target } = req.body;
+
+    const t = Number(target);
+    if (!monthKey || !Number.isFinite(t) || t < 0) {
+      return res.status(400).json({ message: "Invalid monthKey or target" });
+    }
+
+    const doc = await MonthlyTarget.findOneAndUpdate(
+      { monthKey },
+      { $set: { target: t, updatedBy: req.id } },
+      { upsert: true, new: true }
+    );
+
+    return res.status(200).json({ message: "saved", target: doc });
+  } catch (e) {
+    return res.status(500).json({ message: e.message });
+  }
+};
+
+export const topFoundSearches = async (req, res) => {
+  const limit = Number(req.query.limit || 10);
+
+  const rows = await SearchLog.aggregate([
+    { $match: { found: true } },
+    {
+      $group: {
+        _id: "$qNorm",
+        queries: { $addToSet: "$q" },     
+        count: { $sum: 1 },
+        avgResults: { $avg: "$totalCount" },
+        lastAt: { $max: "$createdAt" },
+      },
+    },
+    { $sort: { count: -1 } },
+    { $limit: limit },
+    {
+      $project: {
+        _id: 0,
+        qNorm: "$_id",
+        examples: { $slice: ["$queries", 3] },
+        count: 1,
+        avgResults: { $round: ["$avgResults", 1] },
+        lastAt: 1,
+      },
+    },
+  ]);
+
+  res.json({ rows });
+};
+
+
+export const topNotFoundSearches = async (req, res) => {
+  const limit = Number(req.query.limit || 10);
+
+  const rows = await SearchLog.aggregate([
+    { $match: { found: false } },
+    {
+      $group: {
+        _id: "$qNorm",
+        queries: { $addToSet: "$q" },
+        count: { $sum: 1 },
+        lastAt: { $max: "$createdAt" },
+      },
+    },
+    { $sort: { count: -1 } },
+    { $limit: limit },
+    {
+      $project: {
+        _id: 0,
+        qNorm: "$_id",
+        examples: { $slice: ["$queries", 3] },
+        count: 1,
+        lastAt: 1,
+      },
+    },
+  ]);
+
+  res.json({ rows });
+};
+

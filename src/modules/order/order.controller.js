@@ -380,3 +380,32 @@ export const getRecentOrders = async (req, res) => {
     });
   }
 };
+
+
+export const confirmReceived = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    const userId = req.id;
+
+    const order = await OrderModel.findOne({ _id: orderId, userId });
+    if (!order) return res.status(404).json({ message: "Order not found" });
+
+    if (order.status !== "delivered") {
+      return res.status(400).json({ message: "Order not delivered yet" });
+    }
+
+    if (order.receivedByUser) {
+      return res.status(200).json({ message: "Already confirmed", order });
+    }
+order.status = "received";
+order.receivedByUser = true;
+order.receivedAt = new Date();
+await order.save();
+
+
+    return res.status(200).json({ message: "Confirmed", order });
+  } catch (e) {
+    return res.status(500).json({ message: e.message });
+  }
+};
+

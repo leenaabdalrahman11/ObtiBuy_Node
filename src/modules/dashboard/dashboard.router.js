@@ -13,6 +13,10 @@ router.get("/orders/recent", dashboardController.getRecentOrders);
 router.get("/orders/totalrevenue", dashboardController.getTotalRevenue);
 router.get("/orders/test-fetch", dashboardController.testFetchOrders);
 router.get("/overview", dashboardController.getDashboardOverview);
+router.get("/analytics/top-found", dashboardController.topFoundSearches);
+router.get("/analytics/top-not-found", dashboardController.topNotFoundSearches);
+router.put("/target", dashboardController.updateMonthlyTarget);
+
 
 router.put(
   "/products/update/:id",
