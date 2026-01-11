@@ -1,22 +1,26 @@
-import nodemailer from "nodemailer";
+import axios from "axios";
 
 export async function sendEmail(to, subject, html) {
-  const transporter = nodemailer.createTransport({
-    host: "smtp-relay.brevo.com",
-    port: 587,
-    secure: false,
-    auth: {
-      user: process.env.BREVO_SMTP_USER,
-      pass: process.env.BREVO_SMTP_PASS,
+  const res = await axios.post(
+    "https://api.brevo.com/v3/smtp/email",
+    {
+      sender: {
+        name: "OptiBuy",
+        email: process.env.SENDER_EMAIL,
+      },
+      to: [{ email: to }],
+      subject,
+      htmlContent: html,
     },
-  });
+    {
+      headers: {
+        "api-key": process.env.BREVO_API_KEY,
+        "content-type": "application/json",
+        accept: "application/json",
+      },
+    }
+  );
 
-  const info = await transporter.sendMail({
-    from: `"OptiBuy" <${process.env.SENDER_EMAIL}>`,
-    to,
-    subject,
-    html,
-  });
-
-  return info;
+  return res.data;
 }
+``

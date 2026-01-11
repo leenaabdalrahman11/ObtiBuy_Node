@@ -59,11 +59,12 @@ const initApp = async (app, express) => {
 
   app.get("/test-email", async (req, res) => {
     try {
-      const info = await sendEmail(
-        process.env.TEST_EMAIL || process.env.SENDER_EMAIL,
-        "Brevo Test",
-        "<h1>It works</h1>"
-      );
+const info = await sendEmail(
+  process.env.TEST_EMAIL || process.env.SENDER_EMAIL,
+  "Brevo Test",
+  "<h1>It works</h1>"
+);
+
       res.status(200).json({ ok: true, messageId: info?.messageId });
     } catch (e) {
       res.status(500).json({
