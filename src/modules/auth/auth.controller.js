@@ -10,6 +10,45 @@ export const register = async (req, res, next) => {
     const { userName, email, password, confirmpassword } = req.body;
 
     const user = await userModel.findOne({ email });
+    if (user) return res.status(400).json({ message: "Email already registered" });
+
+    if ((password || "").trim() !== (confirmpassword || "").trim()) {
+      return res.status(400).json({ message: "Passwords do not match" });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, parseInt(process.env.SALT_ROUND));
+
+    const createdUser = await userModel.create({
+      userName,
+      email,
+      password: hashedPassword,
+    });
+
+    const token = jwt.sign({ email }, process.env.CONFIRMEMAILSIGNAL, { expiresIn: "1d" });
+
+    const apiBase = process.env.API_BASE_URL || `${req.protocol}://${req.get("host")}`;
+    const confirmUrl = `${apiBase}/auth/confirmEmail/${token}`;
+
+    const html = `
+      <div>
+        <h1>Confirm Email</h1>
+        <a href="${confirmUrl}">confirm email</a>
+      </div>
+    `;
+
+    res.status(201).json({ message: "Success", user: createdUser });
+
+    sendEmail(email, "confirm email", html).catch(() => {});
+  } catch (error) {
+    next(error);
+  }
+};
+/*
+export const register = async (req, res, next) => {
+  try {
+    const { userName, email, password, confirmpassword } = req.body;
+
+    const user = await userModel.findOne({ email });
     if (user) {
       return res.status(400).json({ message: "Email already registered" });
     }
@@ -41,7 +80,25 @@ export const register = async (req, res, next) => {
     next(error);
   }
 };
+*/
 
+export const confirmEmail = async (req, res, next) => {
+  try {
+    const { token } = req.params;
+    const decoded = jwt.verify(token, process.env.CONFIRMEMAILSIGNAL);
+
+    await userModel.findOneAndUpdate(
+      { email: decoded.email },
+      { confirmEmail: true }
+    );
+
+    const redirectUrl = `${process.env.FRONTEND_URL}/login?verified=1`;
+    return res.redirect(redirectUrl);
+  } catch (error) {
+    next(error);
+  }
+};
+/*
 export const confirmEmail = async (req, res) => {
   const { token } = req.params;
   const decoded = jwt.verify(token, process.env.CONFIRMEMAILSIGNAL);
@@ -51,7 +108,7 @@ export const confirmEmail = async (req, res) => {
   );
   return res.status(200).json({ message: "success" });
 };
-
+*/
 export const login = async (req, res) => {
   const { email, password } = req.body;
   const user = await userModel.findOne({ email });
@@ -78,6 +135,25 @@ export const login = async (req, res) => {
   return res.status(200).json({ message: "success", token });
 };
 
+
+export const sendCode = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    const code = customAlphabet("1234567890abcdef", 4)();
+    await userModel.findOneAndUpdate({ email }, { sendCode: code });
+
+    const html = `<h2>code is ${code}</h2>`;
+
+    res.status(200).json({ message: "success" });
+
+    sendEmail(email, "reset password", html).catch(() => {});
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+/*
 export const sendCode = async (req, res) => {
   const { email } = req.body;
   const code = customAlphabet("1234567890abcdef", 4)();
@@ -85,7 +161,7 @@ export const sendCode = async (req, res) => {
   const html = `<h2>code is ${code}</h2>`;
   await sendEmail(email, "reset password", html);
   return res.status(200).json({ message: "success" });
-};
+};*/
 export const resetPassword = async (req, res) => {
   const { email } = req.body;
   const { code } = req.body;
