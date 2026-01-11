@@ -24,25 +24,32 @@ export const register = async (req, res, next) => {
       password: hashedPassword,
     });
 
-    const token = jwt.sign({ email }, process.env.CONFIRMEMAILSIGNAL, { expiresIn: "1d" });
+    const token = jwt.sign(
+      { email },
+      process.env.CONFIRMEMAILSIGNAL,
+      { expiresIn: "1d" }
+    );
 
-    const apiBase = process.env.API_BASE_URL || `${req.protocol}://${req.get("host")}`;
+    const apiBase =
+      process.env.API_BASE_URL || `${req.protocol}://${req.get("host")}`;
+
     const confirmUrl = `${apiBase}/auth/confirmEmail/${token}`;
 
     const html = `
       <div>
         <h1>Confirm Email</h1>
-        <a href="${confirmUrl}">confirm email</a>
+        <a href="${confirmUrl}">Confirm email</a>
       </div>
     `;
 
     res.status(201).json({ message: "Success", user: createdUser });
 
-    sendEmail(email, "confirm email", html).catch(() => {});
+    sendEmail(email, "Confirm email", html).catch(() => {});
   } catch (error) {
     next(error);
   }
 };
+
 /*
 export const register = async (req, res, next) => {
   try {
@@ -98,6 +105,7 @@ export const confirmEmail = async (req, res, next) => {
     next(error);
   }
 };
+
 /*
 export const confirmEmail = async (req, res) => {
   const { token } = req.params;
