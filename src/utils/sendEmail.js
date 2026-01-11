@@ -6,8 +6,8 @@ export async function sendEmail(to, subject, html) {
     port: 587,
     secure: false,
     auth: {
-      user: process.env.SENDER_EMAIL,
-      pass: process.env.SENDER_PASS,
+      user: process.env.BREVO_SMTP_USER,
+      pass: process.env.BREVO_SMTP_PASS,
     },
   });
 
@@ -20,28 +20,3 @@ export async function sendEmail(to, subject, html) {
 
   return info;
 }
-
-
-/*import nodemailer from "nodemailer";
-
-export async function sendEmail(to, subject, html) {
-    const transporter = nodemailer.createTransport({
-        host: "smtp.gmail.com",
-        port: 587,
-        secure: false,
-        auth: {
-            user: process.env.SENDER_EMAIL,
-            pass: process.env.SENDER_PASS, 
-          },
-    });
-
-    const info = await transporter.sendMail({
-        from: `"OptiBuy" <${process.env.SENDER_EMAIL}>`,
-        to,
-        subject,
-        html,
-    });
-
-    console.log("Email sent:", info.messageId);
-}
-*/

@@ -1,5 +1,7 @@
 import cors from "cors";
 import connectDb from "../DB/connection.js";
+import { sendEmail } from "./utils/sendEmail.js";
+
 import authRouter from "./modules/auth/auth.router.js";
 import categoryRouter from "./modules/category/category.router.js";
 import productRouter from "./modules/Product/product.router.js";
@@ -15,22 +17,15 @@ import settingsRouter from "./modules/settings/settings.router.js";
 import searchRouter from "./modules/search/search.routes.js";
 import promoSectionRoutes from "./modules/promoSections/promoSections.router.js";
 import homeSectionRoutes from "./modules/homeSection/homeSection.routes.js";
-import { sendEmail } from "./utils/sendEmail.js";
 
 const initApp = async (app, express) => {
-  const allowedOrigins = [
-    "http://localhost:5173",
-    "http://localhost:3000",
-    "https://react-opti-buy-ocui.vercel.app",
-  ];
-
   app.use(
     cors({
-      origin: (origin, cb) => {
-        if (!origin) return cb(null, true);
-        if (allowedOrigins.includes(origin)) return cb(null, true);
-        return cb(new Error("Not allowed by CORS"));
-      },
+      origin: [
+        "http://localhost:5173",
+        "https://react-opti-buy-ocui.vercel.app",
+        "https://react-opti-buy-ocui.vercel.app/",
+      ],
       credentials: true,
       methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
       allowedHeaders: ["Content-Type", "Authorization"],
