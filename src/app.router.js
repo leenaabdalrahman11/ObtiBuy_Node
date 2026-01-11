@@ -24,7 +24,6 @@ const initApp = async (app, express) => {
       origin: [
         "http://localhost:5173",
         "https://react-opti-buy-ocui.vercel.app",
-        "https://react-opti-buy-ocui.vercel.app/",
       ],
       credentials: true,
       methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
@@ -34,7 +33,11 @@ const initApp = async (app, express) => {
 
   app.use(express.json());
 
-  await connectDb();
+  app.get("/health", (req, res) => res.status(200).json({ ok: true }));
+
+  try {
+    await connectDb();
+  } catch {}
 
   app.get("/", (req, res) => res.status(200).json({ message: "welcome..." }));
 
@@ -49,7 +52,6 @@ const initApp = async (app, express) => {
   app.use("/dashboard", dashboardRoutes);
   app.use("/users", userRouter);
   app.use("/settings", settingsRouter);
-
   app.use("/subcategory", subCategoryRouter);
   app.use("/search", searchRouter);
   app.use("/api/promo-sections", promoSectionRoutes);
