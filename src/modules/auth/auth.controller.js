@@ -43,8 +43,9 @@ export const register = async (req, res, next) => {
     `;
 
     res.status(201).json({ message: "Success", user: createdUser });
+await sendEmail(email, "confirm email", html);
 
-    sendEmail(email, "Confirm email", html).catch(() => {});
+//    sendEmail(email, "Confirm email", html).catch(() => {});
   } catch (error) {
     next(error);
   }

@@ -47,6 +47,14 @@ const initApp = async (app, express) => {
   app.use("/search", searchRouter);
   app.use("/api/promo-sections", promoSectionRoutes);
   app.use("/api/home-sections", homeSectionRoutes);
+app.get("/test-email", async (req, res) => {
+  await sendEmail(
+    "leenasa272@gmail.com",
+    "Brevo Test",
+    "<h1>It works 🎉</h1>"
+  );
+  res.send("sent");
+});
 
   app.use((req, res) => res.status(404).json({ message: "Route not found" }));
 };
