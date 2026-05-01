@@ -2,10 +2,16 @@ import mongoose from 'mongoose';
 
 const connectDb = async () => {
   try {
-    await mongoose.connect('mongodb+srv://leena:leena@optibuy.ud9svq4.mongodb.net/OptiBuy');
-    console.log(' MongoDB Atlas connected successfully');
+    if (!process.env.DB) {
+      throw new Error('DB environment variable is missing');
+    }
+
+    await mongoose.connect(process.env.DB);
+
+    console.log('MongoDB Atlas connected successfully');
   } catch (error) {
-    console.error(' Database connection failed:', error);
+    console.error('Database connection failed:', error);
+    process.exit(1);
   }
 };
 
