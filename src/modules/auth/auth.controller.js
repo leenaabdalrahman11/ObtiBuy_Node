@@ -35,20 +35,24 @@ export const register = async (req, res, next) => {
 
     const confirmUrl = `${apiBase}/auth/confirmEmail/${token}`;
 
-    const html = `
-      <div>
-        <h1>Confirm Email</h1>
-        <a href="${confirmUrl}">Confirm email</a>
-      </div>
-    `;
+const html = `
+  <div>
+    <h1>Confirm Email</h1>
+    <a href="${confirmUrl}">Confirm email</a>
+  </div>
+`;
 
-    res.status(201).json({ message: "Success", user: createdUser });
 await sendEmail(email, "confirm email", html);
 
+return res.status(201).json({
+  message: "Success, please check your email",
+});
+
 //    sendEmail(email, "Confirm email", html).catch(() => {});
-  } catch (error) {
-    next(error);
-  }
+} catch (error) {
+  console.log("REGISTER ERROR:", error);
+  next(error);
+}
 };
 
 /*
