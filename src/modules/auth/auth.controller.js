@@ -10,15 +10,21 @@ export const register = async (req, res, next) => {
     const { userName, email, password, confirmpassword } = req.body;
 
     const user = await userModel.findOne({ email });
-    if (user) return res.status(400).json({ message: "Email already registered" });
+
+    if (user) {
+      return res.status(400).json({ message: "Email already registered" });
+    }
 
     if ((password || "").trim() !== (confirmpassword || "").trim()) {
       return res.status(400).json({ message: "Passwords do not match" });
     }
 
-    const hashedPassword = await bcrypt.hash(password, parseInt(process.env.SALT_ROUND));
+    const hashedPassword = await bcrypt.hash(
+      password,
+      parseInt(process.env.SALT_ROUND)
+    );
 
-    const createdUser = await userModel.create({
+    await userModel.create({
       userName,
       email,
       password: hashedPassword,
@@ -35,33 +41,27 @@ export const register = async (req, res, next) => {
 
     const confirmUrl = `${apiBase}/auth/confirmEmail/${token}`;
 
-const html = `
-  <div>
-    <h1>Confirm Email</h1>
-    <a href="${confirmUrl}">Confirm email</a>
-  </div>
-`;
-console.log("Sending email to:", email);
-console.log("Confirm URL:", confirmUrl);
+    const html = `
+      <div>
+        <h1>Confirm Email</h1>
+        <a href="${confirmUrl}">Confirm email</a>
+      </div>
+    `;
 
-const emailInfo = await sendEmail(email, "confirm email", html);
+    console.log("Sending email to:", email);
+    console.log("Confirm URL:", confirmUrl);
 
-console.log("EMAIL INFO:", emailInfo);
+    const emailInfo = await sendEmail(email, "confirm email", html);
 
-return res.status(201).json({
-  message: "Success, please check your email",
-});
-await sendEmail(email, "confirm email", html);
+    console.log("EMAIL INFO:", emailInfo);
 
-return res.status(201).json({
-  message: "Success, please check your email",
-});
-
-//    sendEmail(email, "Confirm email", html).catch(() => {});
-} catch (error) {
-  console.log("REGISTER ERROR:", error);
-  next(error);
-}
+    return res.status(201).json({
+      message: "Success, please check your email",
+    });
+  } catch (error) {
+    console.log("REGISTER ERROR:", error);
+    next(error);
+  }
 };
 
 /*
