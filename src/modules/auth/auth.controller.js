@@ -41,7 +41,16 @@ const html = `
     <a href="${confirmUrl}">Confirm email</a>
   </div>
 `;
+console.log("Sending email to:", email);
+console.log("Confirm URL:", confirmUrl);
 
+const emailInfo = await sendEmail(email, "confirm email", html);
+
+console.log("EMAIL INFO:", emailInfo);
+
+return res.status(201).json({
+  message: "Success, please check your email",
+});
 await sendEmail(email, "confirm email", html);
 
 return res.status(201).json({
